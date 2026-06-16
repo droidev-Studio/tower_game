@@ -1,0 +1,42 @@
+{
+  "name": "Tower Building",
+  "gameId": "tower-building",
+  "gameTypeLabel": "stack-tower-timing",
+  "version": "1.0.0",
+  "canvas": {
+    "ratio": 1.5,
+    "highResolution": true
+  },
+  "modules": {
+    "clouds": true,
+    "flights": true,
+    "dayNight": true,
+    "tutorial": true,
+    "lightning": true,
+    "bgm": true
+  },
+  "milestones": [
+    { "floor": 2,  "flightId": 1, "type": "leftToRight" },
+    { "floor": 6,  "flightId": 2, "type": "rightToLeft" },
+    { "floor": 8,  "flightId": 3, "type": "leftToRight" },
+    { "floor": 14, "flightId": 4, "type": "bottomToTop" },
+    { "floor": 18, "flightId": 5, "type": "bottomToTop" },
+    { "floor": 22, "flightId": 6, "type": "bottomToTop" },
+    { "floor": 25, "flightId": 7, "type": "rightTopToLeft" }
+  ],
+  "dayNightColorStops": [
+    [200, 255, 150],
+    [105, 230, 240],
+    [90, 190, 240],
+    [85, 100, 190],
+    [55, 20, 35],
+    [75, 25, 35],
+    [25, 0, 10]
+  ],
+  "cloudPositions": [
+    { "x": 0.10, "y": -0.66 },
+    { "x": 0.65, "y": -0.33 },
+    { "x": 0.10, "y": 0.0 },
+    { "x": 0.65, "y": 0.33 }
+  ]
+}

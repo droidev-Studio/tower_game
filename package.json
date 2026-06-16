@@ -1,0 +1,12 @@
+{
+  "name": "tower-building",
+  "version": "1.0.0",
+  "description": "Tower Building (盖塔/堆塔) — build-free HTML5 Canvas 2D mini-game",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "dev": "npx serve . -l 8080",
+    "validate": "node tools/validate-assets.js"
+  },
+  "license": "ISC"
+}

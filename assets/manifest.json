@@ -1,0 +1,63 @@
+{
+  "name": "tower-building",
+  "version": "1.0.0",
+  "basePath": "assets/",
+  "assetArchitecture": {
+    "version": "1.0",
+    "structure": "four-domain",
+    "domains": ["Audio & Feel", "Game Art", "Ui Art", "Visual Style"],
+    "notes": "Stacking/timing game. block & hook art mapped to Game Art/weapons (the launched/stacked piece); clouds and milestone flights to Game Art/map; HUD & tutorial to Ui Art/run-entry; menu/gameover art to Ui Art/opening; world backdrop to Visual Style/map."
+  },
+  "images": {
+    "background": { "src": "Visual Style/map/background.png" },
+    "hook": { "src": "Game Art/weapons/hook.png" },
+    "rope": { "src": "Game Art/weapons/rope.png" },
+    "blockRope": { "src": "Game Art/weapons/block-rope.png" },
+    "block": { "src": "Game Art/weapons/block.png" },
+    "blockPerfect": { "src": "Game Art/weapons/block-perfect.png" },
+
+    "c1": { "src": "Game Art/map/c1.png" },
+    "c2": { "src": "Game Art/map/c2.png" },
+    "c3": { "src": "Game Art/map/c3.png" },
+    "c4": { "src": "Game Art/map/c4.png" },
+    "c5": { "src": "Game Art/map/c5.png" },
+    "c6": { "src": "Game Art/map/c6.png" },
+    "c7": { "src": "Game Art/map/c7.png" },
+    "c8": { "src": "Game Art/map/c8.png" },
+
+    "f1": { "src": "Game Art/map/f1.png" },
+    "f2": { "src": "Game Art/map/f2.png" },
+    "f3": { "src": "Game Art/map/f3.png" },
+    "f4": { "src": "Game Art/map/f4.png" },
+    "f5": { "src": "Game Art/map/f5.png" },
+    "f6": { "src": "Game Art/map/f6.png" },
+    "f7": { "src": "Game Art/map/f7.png" },
+
+    "tutorial": { "src": "Ui Art/run-entry/tutorial.png" },
+    "tutorialArrow": { "src": "Ui Art/run-entry/tutorial-arrow.png" },
+    "heart": { "src": "Ui Art/run-entry/heart.png" },
+    "score": { "src": "Ui Art/run-entry/score.png" },
+
+    "uiTitle": { "src": "Ui Art/opening/main-index-title.png" },
+    "uiStart": { "src": "Ui Art/opening/main-index-start.png" },
+    "uiLogo": { "src": "Ui Art/opening/main-index-logo.png" },
+    "uiMainBg": { "src": "Ui Art/opening/main-bg.png" },
+    "uiModalBg": { "src": "Ui Art/opening/main-modal-bg.png" },
+    "uiModalOver": { "src": "Ui Art/opening/main-modal-over.png" },
+    "uiAgain": { "src": "Ui Art/opening/main-modal-again-b.png" }
+  },
+  "audio": {
+    "bgm": { "src": "Audio & Feel/audio/bgm.mp3", "alt": "Audio & Feel/audio/bgm.ogg", "loop": true },
+    "drop": { "src": "Audio & Feel/audio/drop.mp3", "alt": "Audio & Feel/audio/drop.ogg" },
+    "dropPerfect": { "src": "Audio & Feel/audio/drop-perfect.mp3", "alt": "Audio & Feel/audio/drop-perfect.ogg" },
+    "gameOver": { "src": "Audio & Feel/audio/game-over.mp3", "alt": "Audio & Feel/audio/game-over.ogg" },
+    "rotate": { "src": "Audio & Feel/audio/rotate.mp3", "alt": "Audio & Feel/audio/rotate.ogg" }
+  },
+  "fonts": {
+    "wenxue": {
+      "src": "fonts/wenxue.ttf",
+      "variants": ["fonts/wenxue.eot", "fonts/wenxue.woff", "fonts/wenxue.svg"],
+      "loadedVia": "css-font-face"
+    }
+  }
+}
