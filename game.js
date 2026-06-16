@@ -831,9 +831,9 @@
     },
     _drawMenu: function (e) {
       var ctx = e.ctx, w = e.width, h = e.height;
-      var title = e.getImg('uiTitle');
-      if (title) { var tw = w * 0.6, th = title.height * tw / title.width; ctx.drawImage(title, (w - tw) / 2, h * 0.12, tw, th); }
-      else { drawYellowString(e, { string: 'TOWER', size: w * 0.14, x: w / 2, y: h * 0.25, fontName: 'Arial', fontWeight: 'bold' }); }
+      // 英文标题（金色描边，匹配游戏风格）；不再使用中文标题图 uiTitle
+      drawYellowString(e, { string: 'TOWER', size: w * 0.17, x: w / 2, y: h * 0.28, fontName: 'Arial', fontWeight: 'bold' });
+      drawYellowString(e, { string: 'BUILDING', size: w * 0.12, x: w / 2, y: h * 0.4, fontName: 'Arial', fontWeight: 'bold' });
       var start = e.getImg('uiStart');
       if (start) { var sw = w * 0.5, sh = start.height * sw / start.width; ctx.drawImage(start, (w - sw) / 2, h * 0.78, sw, sh); }
       else { ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = (w * 0.06) + 'px Arial'; ctx.fillText('TAP TO START', w / 2, h * 0.82); }
