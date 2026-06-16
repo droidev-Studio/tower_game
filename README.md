@@ -108,37 +108,6 @@ Instead of fast action, the fun comes from reading the swing and committing to t
 
 ---
 
-## Run It Locally
-
-No build step. Serve the folder over any static server and open `index.html`:
-
-```bash
-npx serve -l 8080
-# or
-python -m http.server 8080
-```
-
-Then open http://localhost:8080. (Opening via `file://` won't work — the game `fetch`es `spec/game.json` and `assets/manifest.json`.)
-
-Validate the asset structure anytime:
-
-```bash
-node tools/validate-assets.js
-```
-
----
-
-## Architecture
-
-| Layer | File | Role |
-| --- | --- | --- |
-| Tunables | `GameSettings.js` | Difficulty, gravity, perfect band, scores, lives, feel, audio. Loaded **before** `game.js`. |
-| Content / flow | `spec/game.json` | Milestone flyovers, day-night color stops, cloud positions, canvas ratio. |
-| Assets | `assets/manifest.json` | The only asset registry; four-domain structure. |
-| Runtime | `game.js` | Inline engine + state machine + object pools + all gameplay. |
-
----
-
 ## Credits
 
 Built with **Droi AI**.
