@@ -681,7 +681,7 @@
   var Spec = { milestones: [], dayNightColorStops: [], cloudPositions: [] };
   var Runtime = {
     engine: null, state: STATES.LOADING, loader: null, activeBlock: null, blockPool: [],
-    flightSpawned: {}, bgmStarted: false, highScore: 0,
+    flightSpawned: {}, bgmStarted: false, highScore: 0, revivedThisRun: false, _adInFlight: false,
 
     loadSave: function () {
       try {
@@ -704,15 +704,78 @@
     _enter: function (s) {
       var e = this.engine;
       if (s === STATES.PLAYING) {
-        e.setTimeMovement(MOVE.BG_INIT, get('FEEL.BG_INIT_DURATION', 500));
-        if (!get('DEBUG.SKIP_TUTORIAL', false)) this._addTutorial();
-        e.setTimeMovement(MOVE.TUTORIAL, get('FEEL.TUTORIAL_DURATION', 500));
+        this._hideAdDialog(); this._hideResultDialog();
+        // 仅全新一局（blockCount 归零）才播放教程/开场动画；广告复活续局时不重置
+        if (Number(e.getVariable(V.blockCount, 0)) === 0) {
+          e.setTimeMovement(MOVE.BG_INIT, get('FEEL.BG_INIT_DURATION', 500));
+          if (!get('DEBUG.SKIP_TUTORIAL', false)) this._addTutorial();
+          e.setTimeMovement(MOVE.TUTORIAL, get('FEEL.TUTORIAL_DURATION', 500));
+        }
         this._startBgm();
       } else if (s === STATES.GAMEOVER) {
         this.saveScore(Number(e.getVariable(V.gameScore, 0)));
+        // 本局还没用过广告复活 -> 先弹“看广告复活”弹窗；已复活过又死 -> 直接结算
+        if (this.revivedThisRun) this._showResultDialog();
+        else this._showAdDialog();
       }
     },
     _exit: function () {},
+
+    // ===== 弹窗 1：Game Over 广告复活弹窗（APPLY 看广告复活 / SKIP 去结算）=====
+    _showAdDialog: function () {
+      var dlg = document.getElementById('ad-dialog');
+      if (!dlg) return;
+      var apply = document.getElementById('ad-apply');
+      if (apply) { apply.disabled = false; apply.classList.remove('is-disabled'); }
+      this._hideResultDialog();
+      dlg.classList.remove('hidden');
+    },
+    _hideAdDialog: function () { var d = document.getElementById('ad-dialog'); if (d) d.classList.add('hidden'); },
+
+    // ===== 弹窗 2：结算弹窗（仅 PLAY AGAIN）=====
+    _showResultDialog: function () {
+      var dlg = document.getElementById('result-dialog');
+      if (!dlg) return;
+      var sc = document.getElementById('result-score');
+      var bs = document.getElementById('result-best');
+      if (sc) sc.textContent = String(Number(this.engine.getVariable(V.gameScore, 0)));
+      if (bs) bs.textContent = String(this.highScore);
+      this._hideAdDialog();
+      dlg.classList.remove('hidden');
+    },
+    _hideResultDialog: function () { var d = document.getElementById('result-dialog'); if (d) d.classList.add('hidden'); },
+
+    // APPLY：本局首次 -> 看激励视频，成功则复活一条命续局；无奖励/失败 -> 转结算
+    applyRevive: function () {
+      if (this._adInFlight || this.revivedThisRun) return;
+      this._adInFlight = true;
+      var apply = document.getElementById('ad-apply');
+      if (apply) { apply.disabled = true; apply.classList.add('is-disabled'); }
+      var R = this;
+      var ads = window.Ads;
+      var p = (ads && ads.showRewarded) ? ads.showRewarded() : Promise.resolve(true);
+      p.then(function (rewarded) {
+        R._adInFlight = false;
+        if (rewarded) { R.revivedThisRun = true; log('[Ads] rewarded -> revive'); R.revive(); }
+        else { log('[Ads] no reward -> result'); R._hideAdDialog(); R._showResultDialog(); }
+      });
+    },
+    // SKIP：放弃广告，直接进入结算弹窗
+    skipAd: function () { this._hideAdDialog(); this._showResultDialog(); },
+
+    // 复活：退回一条命，原局继续（不 reset，保留分数/楼层/塔身）
+    revive: function () {
+      var e = this.engine;
+      this._hideAdDialog(); this._hideResultDialog();
+      e.setVariable(V.failedCount, Math.max(0, get('CORE_RULES.MAX_FAILS', 3) - 1)); // 留一条命
+      this.changeState(STATES.PLAYING);
+    },
+
+    playAgain: function () {
+      this._hideAdDialog(); this._hideResultDialog();
+      this.resetGame();
+      this.changeState(STATES.PLAYING);
+    },
 
     _startBgm: function () { if (this.bgmStarted) return; if (Spec.modules && Spec.modules.bgm === false) return; this.bgmStarted = true; this.engine.playAudio('bgm', true); },
 
@@ -782,6 +845,8 @@
       e.setVariable(V.bgImgOffset, null); e.setVariable(V.bgGradOffset, 0);
       e.timeMovement = {}; e.timeMovementStartArr = []; e.timeMovementFinishArr = [];
       this.activeBlock = null; this.flightSpawned = {}; this.bgmStarted = false;
+      this.revivedThisRun = false; this._adInFlight = false;
+      this._hideAdDialog(); this._hideResultDialog();
       this.blockPool.forEach(function (b) { b.visible = false; b.ready = false; });
       // flights 清理
       e.instancesObj[LAYER.FLIGHT] = [];
@@ -794,7 +859,7 @@
       switch (this.state) {
         case STATES.MENU: this.changeState(STATES.PLAYING); break;
         case STATES.PLAYING: this.dropActive(); break;
-        case STATES.GAMEOVER: this.resetGame(); this.changeState(STATES.PLAYING); break;
+        case STATES.GAMEOVER: break; // 交由弹窗按钮（APPLY/SKIP/PLAY AGAIN）处理
         default: break;
       }
     },
@@ -814,7 +879,7 @@
       if (this.state === STATES.LOADING) { this._drawLoading(e); return; }
       if (this.state === STATES.PLAYING || this.state === STATES.GAMEOVER) this._drawHud(e);
       if (this.state === STATES.MENU) this._drawMenu(e);
-      if (this.state === STATES.GAMEOVER) this._drawGameOver(e);
+      // GAMEOVER 的交互界面改由 HTML 弹窗 #ad-dialog 承担（含分数、APPLY、PLAY AGAIN）
       if (get('DEBUG.SHOW_FPS', false)) { e.ctx.save(); e.ctx.fillStyle = 'red'; e.ctx.font = '32px Arial'; e.ctx.fillText('FPS ' + e.fps.toFixed(0), 8, 40); e.ctx.restore(); }
     },
 
@@ -837,18 +902,6 @@
       var start = e.getImg('uiStart');
       if (start) { var sw = w * 0.5, sh = start.height * sw / start.width; ctx.drawImage(start, (w - sw) / 2, h * 0.78, sw, sh); }
       else { ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = (w * 0.06) + 'px Arial'; ctx.fillText('TAP TO START', w / 2, h * 0.82); }
-    },
-    _drawGameOver: function (e) {
-      var ctx = e.ctx, w = e.width, h = e.height;
-      ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(0, 0, w, h); ctx.restore();
-      var over = e.getImg('uiModalOver');
-      if (over) { var ow = w * 0.6, oh = over.height * ow / over.width; ctx.drawImage(over, (w - ow) / 2, h * 0.22, ow, oh); }
-      var score = Number(e.getVariable(V.gameScore, 0));
-      drawYellowString(e, { string: 'Score ' + score, size: w * 0.08, x: w / 2, y: h * 0.5, fontName: 'Arial', fontWeight: 'bold' });
-      drawYellowString(e, { string: 'Best ' + this.highScore, size: w * 0.06, x: w / 2, y: h * 0.58, fontName: 'Arial', fontWeight: 'bold' });
-      var again = e.getImg('uiAgain');
-      if (again) { var aw = w * 0.5, ah = again.height * aw / again.width; ctx.drawImage(again, (w - aw) / 2, h * 0.66, aw, ah); }
-      else { ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.font = (w * 0.05) + 'px Arial'; ctx.fillText('TAP TO RETRY', w / 2, h * 0.7); }
     },
     _drawHud: function (e) {
       var w = e.width;
@@ -927,13 +980,25 @@
     var onPrimary = function (ev) { if (ev) ev.preventDefault(); Runtime.onPrimary(); };
     canvas.addEventListener('pointerdown', onPrimary, { passive: false });
     window.addEventListener('keydown', function (ev) {
-      if (ev.code === 'Space' || ev.key === ' ') { ev.preventDefault(); Runtime.onPrimary(); }
-      else if (ev.code === 'Enter' || ev.key === 'Enter') { Runtime.onPause(); }
+      if (ev.code === 'Space' || ev.key === ' ') {
+        // GAMEOVER 时不拦截空格，留给弹窗里聚焦的按钮（APPLY/SKIP/PLAY AGAIN）原生激活
+        if (Runtime.state === STATES.GAMEOVER) return;
+        ev.preventDefault(); Runtime.onPrimary();
+      } else if (ev.code === 'Enter' || ev.key === 'Enter') { Runtime.onPause(); }
     });
     // 重新计算画布尺寸时仅做 CSS 居中（世界坐标在 init 时确定）
     window.addEventListener('resize', function () {
       var s = computeSize(); canvas.style.width = s.width + 'px'; canvas.style.height = s.height + 'px';
     });
+
+    // 广告：初始化桥（浏览器内为空操作）+ 绑定两个弹窗的按钮
+    if (window.Ads && window.Ads.init) window.Ads.init();
+    var applyBtn = document.getElementById('ad-apply');
+    if (applyBtn) applyBtn.addEventListener('click', function () { Runtime.applyRevive(); });
+    var skipBtn = document.getElementById('ad-skip');
+    if (skipBtn) skipBtn.addEventListener('click', function () { Runtime.skipAd(); });
+    var againBtn = document.getElementById('ad-again');
+    if (againBtn) againBtn.addEventListener('click', function () { Runtime.playAgain(); });
 
     engine.start();
 
