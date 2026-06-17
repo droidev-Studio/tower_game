@@ -10,8 +10,32 @@
 <body>
   <canvas id="game"></canvas>
 
-  <!-- GameSettings.js 必须先于 game.js 加载（GAME_BUILD_SOP §4） -->
+  <!-- 弹窗 1：Game Over 广告复活弹窗（全英文）。三条命耗尽且本局未复活过时弹出。
+       APPLY = 看广告复活一条命续局；SKIP = 进入结算弹窗。每局仅一次。 -->
+  <div id="ad-dialog" class="ad-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="ad-title">
+    <div class="ad-box">
+      <h2 id="ad-title" class="ad-title">GAME OVER</h2>
+      <p class="ad-desc-strong">Watch a short ad to support the game.</p>
+      <p class="ad-sub">Revive with one more life.</p>
+      <div class="ad-btn-row">
+        <button id="ad-apply" class="ad-btn ad-btn-primary" type="button">APPLY</button>
+        <button id="ad-skip" class="ad-btn" type="button">SKIP</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 弹窗 2：结算弹窗。SKIP 后、或本局已用过广告复活后再死亡时弹出。仅 PLAY AGAIN。 -->
+  <div id="result-dialog" class="ad-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="result-title">
+    <div class="ad-box">
+      <h2 id="result-title" class="ad-title">GAME OVER</h2>
+      <p class="ad-stats">Score <b id="result-score">0</b> &nbsp;·&nbsp; Best <b id="result-best">0</b></p>
+      <button id="ad-again" class="ad-btn ad-btn-primary" type="button">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <!-- GameSettings.js 必须先于 game.js 加载（GAME_BUILD_SOP §4）。ads.js 提供广告桥（浏览器内空操作）。 -->
   <script src="./GameSettings.js"></script>
+  <script src="./ads.js"></script>
   <script src="./game.js"></script>
 </body>
 </html>
